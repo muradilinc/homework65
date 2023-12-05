@@ -7,9 +7,10 @@ import DynamicPage from '../DynamicPage/DynamicPage';
 import AdminPage from '../AdminPage/AdminPage';
 import {useCallback, useEffect, useState} from 'react';
 import axiosApi from '../../axiosApi';
+import {PageApi} from '../../types';
 
 const App = () => {
-  const [pages, setPages] = useState([]);
+  const [pages, setPages] = useState<PageApi[]>([]);
 
   const getPages = useCallback( async () => {
     try {
@@ -30,6 +31,7 @@ const App = () => {
   useEffect(() => {
     void getPages();
   }, [getPages]);
+
 
   return (
     <>

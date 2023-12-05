@@ -2,9 +2,10 @@ import {AppBar, Box, Container, Toolbar, Typography} from '@mui/material';
 import {Link} from 'react-router-dom';
 import {ADMIN_PAGE, DYNAMIC_PAGE, HOME_PAGE} from '../../constansts/routes';
 import React from 'react';
+import {PageApi} from '../../types';
 
 interface Props {
-  pages: [];
+  pages: PageApi[];
 }
 
 const Header: React.FC<Props> = ({pages}) => {
