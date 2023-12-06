@@ -51,8 +51,8 @@ const AdminPage: React.FC<Props> = ({pages, updateData}) => {
         id: Object.keys(singlePage)[0],
         selectPage: contentSinglePage.pageName,
         titlePage: contentSinglePage.title,
-        descriptionPage: contentSinglePage.content
       }));
+      setDescription(contentSinglePage.content);
     } catch (error) {
       alert('Error!' + error);
     }
