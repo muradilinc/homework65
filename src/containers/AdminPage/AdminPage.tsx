@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Box,
   Button,
@@ -11,13 +11,56 @@ import {
   Typography
 } from '@mui/material';
 import axiosApi from '../../axiosApi';
+import {Page, PageApi} from '../../types';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {DYNAMIC_PAGE} from '../../constansts/routes';
+import {validateSlug} from '../../utils/validateSlug';
 
-const AdminPage = () => {
+interface Props {
+  pages: PageApi[];
+  updateData: () => void;
+}
+
+const AdminPage: React.FC<Props> = ({pages, updateData}) => {
+  const location = useLocation();
+  const editStatus = location.pathname.includes('edit');
+  const navigate = useNavigate();
+  const {page} = useParams();
   const [editPage, setEditPage] = useState({
+    id: '',
     selectPage: '',
     titlePage: '',
     descriptionPage: ''
   });
+  const [slug, setSlug] = useState<string>('');
+
+  const getSinglePage = useCallback(async (selectPage: string) => {
+    try {
+      const pageResponse = await axiosApi.get<Page | null>(`/pages/${page ? page : selectPage}.json`);
+      const singlePage = pageResponse.data;
+
+      if (!singlePage) {
+        return;
+      }
+
+      const contentSinglePage = Object.values(singlePage)[0];
+      setEditPage(prevState => ({
+        ...prevState,
+        id: Object.keys(singlePage)[0],
+        selectPage: contentSinglePage.pageName,
+        titlePage: contentSinglePage.title,
+        descriptionPage: contentSinglePage.content
+      }));
+    } catch (error) {
+      alert('Error!' + error);
+    }
+  }, [page]);
+
+  useEffect(() => {
+    if (location.pathname.includes('edit') || editPage.selectPage !== '') {
+      void getSinglePage(editPage.selectPage);
+    }
+  }, [getSinglePage, location.pathname, editPage.selectPage]);
 
   const changeEditPage = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent) => {
     const {name, value} = event.target;
@@ -28,13 +71,39 @@ const AdminPage = () => {
     }));
   };
 
+  const changeSlug = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(event.target.value);
+  };
+
   const saveContent = async (event: React.FormEvent) => {
     event.preventDefault();
 
     try {
-      await axiosApi.put('/pages.json', editPage);
+      if (editPage.selectPage.includes('new')) {
+        if (validateSlug(slug)) {
+          await axiosApi.post(`/pages/${slug}.json`, {
+            content: editPage.descriptionPage,
+            title: editPage.titlePage,
+            pageName: editPage.titlePage
+          });
+          updateData();
+          navigate(`${DYNAMIC_PAGE}/${page ? page : slug}`);
+        }
+      } else {
+        await axiosApi.put(`/pages/${page ? page : editPage.selectPage}/${editPage.id}.json`, {
+          content: editPage.descriptionPage,
+          title: editPage.titlePage,
+          pageName: editPage.titlePage
+        });
+        updateData();
+        navigate(`${DYNAMIC_PAGE}/${page ? page : editPage.selectPage}`);
+      }
     } catch (error) {
-      alert('Error ' + error);
+      if (error instanceof Error) {
+        alert('Error ' + error);
+      } else {
+        console.log(error);
+      }
     }
   };
 
@@ -47,35 +116,75 @@ const AdminPage = () => {
         Edit page
       </Typography>
       <form onSubmit={saveContent}>
-        <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Page</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            name="selectPage"
-            value={editPage.selectPage}
-            label="page"
-            onChange={changeEditPage}
-          >
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
-          </Select>
-        </FormControl>
+        {
+          !editStatus ?
+            <FormControl
+              fullWidth
+              sx={{
+                my: '1rem'
+              }}
+            >
+              <InputLabel id="demo-simple-select-label">Page</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                name="selectPage"
+                required
+                value={editPage.selectPage}
+                label="page"
+                onChange={changeEditPage}
+              >
+                {
+                  !editStatus ?
+                    <MenuItem value="new-page">New Page</MenuItem>
+                    :
+                    null
+                }
+                {
+                  pages.map((page) =>
+                    <MenuItem key={page.page} value={page.page}>{page.page}</MenuItem>
+                  )
+                }
+              </Select>
+            </FormControl>
+            :
+            null
+        }
         <FormControl sx={{
-          width: '100%'
+          width: '100%',
+          my: '1rem'
         }}>
           <TextField
             value={editPage.titlePage}
             onChange={changeEditPage}
             name="titlePage"
-            label="Outlined"
+            label="Title"
             variant="outlined"
+            required
           />
         </FormControl>
+        {
+          editPage.selectPage.includes('new') ?
+            <FormControl sx={{
+              width: '100%',
+              my: '1rem'
+            }}>
+              <TextField
+                value={slug}
+                onChange={changeSlug}
+                name="slug"
+                label="ID slug"
+                variant="outlined"
+                required
+              />
+            </FormControl>
+            :
+            null
+        }
         <FormControl
           sx={{
-            width: '100%'
+            width: '100%',
+            my: '1rem'
           }}
         >
           <TextField
@@ -86,11 +195,32 @@ const AdminPage = () => {
             label="Content"
             multiline={true}
             rows={5}
+            required
           />
         </FormControl>
-        <Button type="submit" variant="contained" color="success">
+        <Button
+          type="submit"
+          variant="contained"
+          color="success"
+        >
           Save
         </Button>
+        {
+          editStatus ?
+            <Button
+              type="submit"
+              variant="contained"
+              color="error"
+              sx={{
+                marginLeft: '10px'
+              }}
+              onClick={() => navigate(`${DYNAMIC_PAGE}/${page}`)}
+            >
+              Cancel
+            </Button>
+            :
+            null
+        }
       </form>
     </Box>
   );

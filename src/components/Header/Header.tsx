@@ -9,7 +9,6 @@ interface Props {
 }
 
 const Header: React.FC<Props> = ({pages}) => {
-  console.log(pages);
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -27,7 +26,7 @@ const Header: React.FC<Props> = ({pages}) => {
               style={{
                 textDecoration: 'none',
                 color: 'white'
-            }}
+              }}
             >
               SSR-Demo
             </Link>
@@ -50,7 +49,13 @@ const Header: React.FC<Props> = ({pages}) => {
             {
               pages.map(page => {
                 return (
-                  <Typography mr={2} key={page.page}>
+                  <Typography
+                    sx={{
+                      textTransform: 'capitalize'
+                    }}
+                    mr={2}
+                    key={page.page}
+                  >
                     <Link
                       to={`${DYNAMIC_PAGE}/${page.page}`}
                       style={{
