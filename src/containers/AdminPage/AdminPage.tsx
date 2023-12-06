@@ -1,4 +1,10 @@
 import React, {useCallback, useEffect, useState} from 'react';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import axiosApi from '../../axiosApi';
+import {Page, PageApi, PageMutation} from '../../types';
+import {DYNAMIC_PAGE} from '../../constansts/routes';
+import {validateSlug} from '../../utils/validateSlug';
+import FroalaEditor from 'react-froala-wysiwyg';
 import {
   Box,
   Button,
@@ -10,11 +16,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import axiosApi from '../../axiosApi';
-import {Page, PageApi} from '../../types';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
-import {DYNAMIC_PAGE} from '../../constansts/routes';
-import {validateSlug} from '../../utils/validateSlug';
+
 
 interface Props {
   pages: PageApi[];
@@ -26,12 +28,12 @@ const AdminPage: React.FC<Props> = ({pages, updateData}) => {
   const editStatus = location.pathname.includes('edit');
   const navigate = useNavigate();
   const {page} = useParams();
-  const [editPage, setEditPage] = useState({
+  const [editPage, setEditPage] = useState<PageMutation>({
     id: '',
     selectPage: '',
     titlePage: '',
-    descriptionPage: ''
   });
+  const [description, setDescription] = useState<FroalaEditor>();
   const [slug, setSlug] = useState<string>('');
 
   const getSinglePage = useCallback(async (selectPage: string) => {
@@ -74,6 +76,9 @@ const AdminPage: React.FC<Props> = ({pages, updateData}) => {
   const changeSlug = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSlug(event.target.value);
   };
+  const changeDescription = (event: FroalaEditor) => {
+      setDescription(event);
+  };
 
   const saveContent = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -82,7 +87,7 @@ const AdminPage: React.FC<Props> = ({pages, updateData}) => {
       if (editPage.selectPage.includes('new')) {
         if (validateSlug(slug)) {
           await axiosApi.post(`/pages/${slug}.json`, {
-            content: editPage.descriptionPage,
+            content: description,
             title: editPage.titlePage,
             pageName: editPage.titlePage
           });
@@ -91,7 +96,7 @@ const AdminPage: React.FC<Props> = ({pages, updateData}) => {
         }
       } else {
         await axiosApi.put(`/pages/${page ? page : editPage.selectPage}/${editPage.id}.json`, {
-          content: editPage.descriptionPage,
+          content: description,
           title: editPage.titlePage,
           pageName: editPage.titlePage
         });
@@ -187,16 +192,11 @@ const AdminPage: React.FC<Props> = ({pages, updateData}) => {
             my: '1rem'
           }}
         >
-          <TextField
-            variant="outlined"
-            value={editPage.descriptionPage}
-            onChange={changeEditPage}
-            name="descriptionPage"
-            label="Content"
-            multiline={true}
-            rows={5}
-            required
-          />
+          <FroalaEditor
+            tag='textarea'
+            model={description}
+            onModelChange={changeDescription}
+            />
         </FormControl>
         <Button
           type="submit"

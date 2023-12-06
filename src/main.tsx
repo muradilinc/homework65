@@ -4,6 +4,8 @@ import App from './containers/App/App';
 import {BrowserRouter} from 'react-router-dom';
 
 import './index.css';
+import 'froala-editor/css/froala_style.min.css';
+import 'froala-editor/css/froala_editor.pkgd.min.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

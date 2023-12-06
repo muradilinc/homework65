@@ -1,8 +1,8 @@
-import {AppBar, Box, Container, Toolbar, Typography} from '@mui/material';
-import {Link} from 'react-router-dom';
-import {ADMIN_PAGE, DYNAMIC_PAGE, HOME_PAGE} from '../../constansts/routes';
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {PageApi} from '../../types';
+import {ADMIN_PAGE, DYNAMIC_PAGE, HOME_PAGE} from '../../constansts/routes';
+import {AppBar, Box, Container, Toolbar, Typography} from '@mui/material';
 
 interface Props {
   pages: PageApi[];

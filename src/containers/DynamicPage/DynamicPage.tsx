@@ -1,9 +1,10 @@
 import {useCallback, useEffect, useState} from 'react';
 import {Outlet, useLocation, useNavigate, useParams} from 'react-router-dom';
-import {Box, Button, Typography} from '@mui/material';
 import axiosApi from '../../axiosApi';
 import {Page} from '../../types';
 import {DYNAMIC_PAGE} from '../../constansts/routes';
+import FroalaEditorView from 'react-froala-wysiwyg/FroalaEditorView';
+import {Box, Button, Typography} from '@mui/material';
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -12,6 +13,7 @@ const DynamicPage = () => {
   const [singlePage, setSinglePage] = useState<Page>({
     title: '',
     content: '',
+    pageName: ''
   });
 
   const getSinglePage = useCallback(async () => {
@@ -35,7 +37,7 @@ const DynamicPage = () => {
     if (location.pathname.includes(page ? page : '')) {
       void getSinglePage();
     }
-  }, [getSinglePage, location.pathname]);
+  }, [getSinglePage, location.pathname, page]);
 
   return (
     <>
@@ -55,12 +57,9 @@ const DynamicPage = () => {
               {singlePage.title}
             </Typography>
             <Box my="1rem">
-              <Typography
-                variant="h5"
-                component="p"
-              >
-                {singlePage.content}
-              </Typography>
+              <FroalaEditorView
+                model={singlePage.content}
+              />
               <Box
                 sx={{
                   my: "1rem",
@@ -69,7 +68,6 @@ const DynamicPage = () => {
                 }}
               >
                 <Button onClick={() => navigate(`${DYNAMIC_PAGE}/${page}/edit`)} variant="outlined">Edit</Button>
-                {/*<Button variant="outlined">Primary</Button>*/}
               </Box>
             </Box>
           </>

@@ -1,9 +1,20 @@
 export interface Page {
   title: string;
   content: string;
+  pageName: string;
+}
+
+export interface PageContent {
+  [key: string]: Page;
 }
 
 export interface PageApi {
   page: string;
-  contentPage: Page;
+  contentPage: PageContent;
+}
+
+export interface PageMutation {
+  id: string;
+  titlePage: string;
+  selectPage: string;
 }
